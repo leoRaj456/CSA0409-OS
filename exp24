@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <fcntl.h>      
+#include <unistd.h>     
+#include <string.h>    
+#include <stdlib.h>    
+
+int main() {
+    int fd;
+    char write_buf[] = "Hello, UNIX System Calls!\n";
+    char read_buf[100];
+    ssize_t bytes_read;
+
+    // ---- Creating / Opening a File ----
+    fd = open("demo.txt", O_CREAT | O_RDWR, 0644);
+    if (fd < 0) {
+        perror("open");
+        exit(1);
+    }
+    printf("File 'demo.txt' created and opened successfully.\n");
+
+    // ---- Writing to the File ----
+    if (write(fd, write_buf, strlen(write_buf)) < 0) {
+        perror("write");
+        exit(1);
+    }
+    printf("Data written to file.\n");
+
+    // ---- Move file pointer to beginning ----
+    lseek(fd, 0, SEEK_SET);
+
+    // ---- Reading from the File ----
+    bytes_read = read(fd, read_buf, sizeof(read_buf));
+    if (bytes_read < 0) {
+        perror("read");
+        exit(1);
+    }
+
+    read_buf[bytes_read] = '\0';  // Null-terminate buffer
+    printf("Data read from file: %s\n", read_buf);
+
+    // ---- Demonstrating lseek() ----
+    lseek(fd, 7, SEEK_SET);
+    printf("File pointer moved to position 7.\n");
+
+    // ---- Writing more data at new position ----
+    write(fd, "SYSTEM CALLS", 12);
+    printf("Written \"SYSTEM CALLS\" starting at position 7.\n");
+
+    // ---- Closing the File ----
+    close(fd);
+    printf("File closed.\n");
+
+    // ---- Removing (unlinking) the file ----
+    if (unlink("demo.txt") == 0)
+        printf("File 'demo.txt' deleted successfully.\n");
+    else
+        perror("unlink");
+
+    return 0;
+}
